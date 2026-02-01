@@ -1,7 +1,7 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-canvas.height = window.innerHeight * 3/5;
-canvas.width = window.innerWidth * 3/5;
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
 
 class Particle {
   constructor(start_x, start_y, width=50, speed=2, x_limit=canvas.width, y_limit=canvas.height) {
@@ -12,7 +12,8 @@ class Particle {
     this.y_limit = y_limit;
     this.x_limit = x_limit;
   }
-
+  // assign rings of colors & move in motion
+  // want to be able to apply a tilt to the motion
   isValidPosition(x, y) {
     return x >= 0 && x < this.x_limit && y >=0 && y < this.y_limit;
   }
@@ -138,17 +139,133 @@ class Cluster extends Particle {
 }
 
 var particles = [];
-// const positions = [[500,500], [250,250], [100,100]];
-
-// for (const p in positions) {
-//   particles.push(new Cluster(positions[p][0], positions[p][1], 50, 3));
-// }
-// console.log(particles);
+var nebulaParticles = [];
 var delta = 0;
 var removeParticles = false;
+
+
+function genCoord(amplitude, centerVal) {
+  return (Math.random() * amplitude)/2 + -(Math.random() * amplitude)/2 + centerVal;
+}
+
+
+function inOval(x,y, oval) {
+  const {h,k,a,b,r} = oval;
+  actual_r = (x-h)**2/(a**2) + (y-k)**2/(b**2)
+  return actual_r < r
+}
+
+function percentOfColor(val) {
+  return Math.abs(val- this.x_limit/2)/Math.abs(this.x_limit/2)
+}
+
+function calcOvularCoords(galaxy, r, θ) {
+    const {a,b, k, h, tilt} = galaxy;
+
+    const ux = r * Math.cos(θ); 
+    const uy = r * Math.sin(θ);
+
+    const ex = a * ux;
+    const ey = b * uy;
+    
+    const rx = ex * Math.cos(tilt) - ey * Math.sin(tilt);
+    const ry = ex * Math.sin(tilt) + ey * Math.cos(tilt);
+    
+    // offset by desired center position 
+    return [h + rx, k + ry];
+}
+
+function percentageOfRadius(minVal, val, maxVal, abs=true) {
+  if (abs)
+    return (Math.abs(val-minVal)/Math.abs(maxVal-minVal))**1.5
+  const eq = (val- minVal)/(maxVal-minVal)
+  const res = eq > 0 ? eq**1.5 : -1 * eq**1.5
+  return res;
+}
+
+function createGalaxy(center_x, center_y, height, width, tilt, color=1, otherColor) { //, colors, concentration, tilt) {
+  const galaxy = {
+    'a': width,
+    'b': height,
+    'r': 500,
+    'k': center_y,
+    'h': center_x,
+    "tilt": tilt
+  }  
+  for (var i = 0; i < 1000; i++) {
+
+    // random r and theta value
+    const r = Math.sqrt(Math.random());
+    const θ = 2 * Math.PI * Math.random();
+
+    // min = center_x, val = x, max = maxX
+    const [maxX,maxY] = calcOvularCoords(galaxy, 1, θ);
+    var [x,y] = calcOvularCoords(galaxy, r, θ);
+
+    const percentOfRadius = percentageOfRadius(center_x, x, maxX) * 255;
+    switch (color) {
+      case 0:
+        ctx.fillStyle = `rgb(${percentOfRadius}, 30, ${otherColor})`
+        break;
+      case 1:
+        ctx.fillStyle = `rgb(180, ${percentOfRadius * 0.3}, 60)`
+        break;
+      case 2:
+        ctx.fillStyle = `rgb(${otherColor}, 30, ${percentOfRadius})`
+        break;
+    }
+    // const portionOfRadius = percentageOfRadius(center_x, x, maxX, abs=true) * 255;
+
+    // const randomScale = Math.random() * 300;
+    // if (portionOfRadius > 0.9) {
+    //   x += Math.random() * randomScale;
+    //   y += Math.random() * randomScale;
+    // }
+    // if (portionOfRadius < -0.9) {
+    //   x -= Math.random() * randomScale;
+    //   y -= Math.random() * randomScale;
+    // }
+    ctx.fillRect(x, y, 5, 5);
+  }
+}
+
+// experiment with not clearing page afterwards!!
+
+const galaxies = [];
+const numGalaxies = 3;
+
+for (let i = 0; i < numGalaxies; i++) {
+  const galaxy = {}
+  galaxy['color'] = Math.floor(Math.random() * 3);
+  galaxy['x'] = Math.random() > 0.5 ? Math.random() * 0.25 * canvas.width : Math.random() * 0.25 * canvas.width + canvas.width*0.75;
+  galaxy['y'] = Math.random() * canvas.height * 0.6 + canvas.height * 0.2;
+  galaxy['width'] = Math.random() * 200 + 100;
+  galaxy['height'] = Math.random() * 25 + 50;
+  galaxy['tilt'] = Math.random() * Math.PI;
+  galaxy['otherColor'] = Math.random()*255 + 10;
+  galaxies.push(galaxy);
+}
+
+const rand = Math.random()*255 + 10;
 function draw() {  
+  
   ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // createGalaxy(400,700,350,100, 2.2, color=1, otherColor=Math.random()*255 + 10);
+  // createGalaxy(canvas.width*0.8,canvas.height*0.6,350,100, 0.8, color=2, otherColor=rand);
+  // for (const g in galaxies) {
+  //   const galaxy = galaxies[g];
+  //   createGalaxy(galaxy['x'], galaxy['y'], galaxy['width'], galaxy['height'], galaxy['tilt'], color=galaxy['color'], otherColor=galaxy['otherColor'])
+  // }
+
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 100px Courier'
+  ctx.fillText('sierra janson', canvas.width/2, canvas.height/2)
+  ctx.font = 'bold 30px Courier'
+  ctx.fillText('computer science', canvas.width/2, canvas.height/2 + 75);
+
   if (removeParticles) {
     for (var i = 0; i < 3; i++) {
       if (particles.length > 0) {
@@ -157,19 +274,21 @@ function draw() {
     }
   }
   for (const p in particles) {
-    // particles[p].ripple(delta);
     particles[p].nebula(delta);
-
   }
-
+    // for (const np in nebulaParticles) {
+      //   nebulaParticles[np].nebula(delta);
+      // }
+      
   delta +=0.1;
 }
-// document.addEventListener('click', function(event) {
-//   var mx = event.clientX;
+    // document.addEventListener('click', function(event) {
+      //   var mx = event.clientX;
 //   var my = event.clientY;
 
 //   particles.push(new Cluster(mx,my,25,6));//event.clientX, event.clickY,50,3));
 // });
+
 let timer;
 document.addEventListener('mousemove', (e) => {
   const rect = canvas.getBoundingClientRect();
@@ -184,26 +303,20 @@ document.addEventListener('mousemove', (e) => {
   removeParticles = false;
   timer = setTimeout(() => {
     console.log("stopped for 2 seconds");
-    // particles = [];
     removeParticles = true;
-    // do whatever should happen after stopping
   }, 200);
 
 });
 
-// follow movement of cursor
-// spawn in 500 clusters, render them for a bit, and then take them out of particles
 
-// for (var i = 0; i < 10000; i++) {
-//   particles.push(new Cluster(Math.random()*canvas.width,Math.random()*canvas.height,5,6));
+// for (var i = 0; i < 5000; i++) {
+//   nebulaParticles.push(new Cluster(Math.random()*canvas.width,Math.random()*canvas.height,5,6));
 // }
-
-// function checkClicks() {
-
-
-// }
-// setInterval(checkClicks, 50);
 setInterval(draw, 50);
+
+
+
+
 // function mainLoop() {
 //   update();
 //   draw();
