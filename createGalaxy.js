@@ -27,6 +27,7 @@ function percentageOfRadius(minVal, val, maxVal, abs=true, amplifier=1.5) {
 
 
 export function createGalaxy(ctx, center_x, center_y, height, width, tilt, color, otherColor, pixels=1000) { //, colors, concentration, tilt) {
+  const galaxyPositions = []
   const galaxy = {
     'a': width,
     'b': height,
@@ -59,7 +60,9 @@ export function createGalaxy(ctx, center_x, center_y, height, width, tilt, color
         break;
     }
     ctx.fillRect(x, y, 3, 3);
+    galaxyPositions.push([x,y, ctx.fillStyle, percentOfRadius/255,center_x,maxX])
   }
+  return galaxyPositions
 }
 
 function getCoordWithPerlinDistribution(width, height, scale) {
@@ -95,3 +98,36 @@ export function spawnGalaxies() {
   }
   return galaxies;
 }
+
+export function createGalaxies(ctx, galaxies) {
+
+  // for (const g in galaxies) {
+    const galaxy = galaxies[0];
+    return createGalaxy(ctx, galaxy['x'], galaxy['y'], galaxy['height'], galaxy['width'], galaxy['tilt'], galaxy['color'], galaxy['otherColor'], galaxy['pixels'])
+  // }
+}
+
+export function renderGalaxies(ctx, delta, galaxyPositions) {
+  for (let i = 0; i < galaxyPositions.length; i++) {
+    const [x,y, fillStyle, percentageOfRadius, center_x, max_x] = galaxyPositions[i]
+    ctx.fillStyle = fillStyle
+    // console.log(x,center_x,max_x)
+    const r = Math.abs(max_x-center_x) * (percentageOfRadius)
+    // console.log(percentageOfRadius)
+    ctx.fillRect(x + r*Math.cos(delta), y+ r*Math.sin(delta), 3, 3);
+
+  }
+}
+
+
+// function renderButterfly(ctx, delta, galaxyPositions) {
+//   for (let i = 0; i < galaxyPositions.length; i++) {
+//     const [x,y, fillStyle, percentageOfRadius, center_x, max_x] = galaxyPositions[i]
+//     ctx.fillStyle = fillStyle
+//     // console.log(x,center_x,max_x)
+//     const r = Math.abs(max_x-center_x) * (percentageOfRadius)
+//     // console.log(percentageOfRadius)
+//     ctx.fillRect(x + r*Math.cos(delta), y+ r*Math.sin(delta), 3, 3);
+
+//   }
+// }

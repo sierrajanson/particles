@@ -107,7 +107,7 @@ export default class Cluster extends Particle {
   calcDistance(x,y, ylim=this.y_limit, xlim=this.x_limit) {
     return Math.sqrt(((xlim/2 - x)**2)/3 + (ylim/2 - y)**2);
   }
-  nebula(delta) {
+  nebula() {
     this.updatePositions();
     const colors = [];
     colors.push(this.getNebulaColor(this.calcDistance(this.right, this.start_y, window.innerHeight) + Math.random() * 100));
@@ -117,7 +117,7 @@ export default class Cluster extends Particle {
     this.displayParticles(colors);
   }
 
-  ripple(delta) {
+  ripple() {
     const colors = [];
     this.updatePositions();
     colors.push(`rgb(120, 0,${this.getColor(this.right, this.start_x)})`);
