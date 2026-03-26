@@ -8,7 +8,7 @@ fun ideas:
 */
 
 import {renderTextContent} from './renderTextContent.js';
-import {spawnGalaxies, renderGalaxies, createGalaxies, createGalaxy} from './createGalaxy.js';
+import {renderGalaxies, createGalaxies} from './createGalaxy.js';
 import {createStars, renderStars} from './stars.js';
 import {clearCanvas} from './helper.js'
 import {renderImage, drawImageCloud} from './imageRenderer.js';
@@ -19,9 +19,8 @@ const heightMultiplier = 2.5
 canvas.height = window.innerHeight*heightMultiplier;
 canvas.width = window.innerWidth;
 
-const galaxies = spawnGalaxies(5, 20, [canvas.width, canvas.height/heightMultiplier], [canvas.width/2, canvas.height/5]);
 const stars = createStars();
-const galaxyPositions =createGalaxies(ctx, galaxies)
+const galaxyPositions =createGalaxies(ctx, 5, [canvas.width, canvas.height/heightMultiplier])
 // renderImage(ctx);
 var delta = 0
 var x = 300;
