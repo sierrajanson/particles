@@ -6,7 +6,6 @@ fun ideas:
 - rotating planets
 - animated cat
 */
-
 import {renderTextContent} from './renderTextContent.js';
 import {renderGalaxies, createGalaxies} from './createGalaxy.js';
 import {createStars, renderStars} from './stars.js';
@@ -15,28 +14,32 @@ import {renderImage, drawImageCloud} from './imageRenderer.js';
 import { renderCursorTrail } from './renderCursorTrail.js';
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const heightMultiplier = 2.5
+const heightMultiplier = window.innerWidth > window.innerHeight ? 2.5 : 1.5
 canvas.height = window.innerHeight*heightMultiplier;
 canvas.width = window.innerWidth;
+// Later in your main loop:
+const glowCanvas = document.createElement("canvas");
+const glowCtx = glowCanvas.getContext("2d");
 
-const stars = createStars();
+glowCanvas.width = canvas.width;
+glowCanvas.height = canvas.height;
+
+const stars = createStars(glowCtx);
 const galaxyPositions =createGalaxies(ctx, 5, [canvas.width, canvas.height/heightMultiplier])
-// renderImage(ctx);
-var delta = 0
+renderImage(ctx);
+var delta = Math.PI
 var x = 300;
 var y = 300;
 let increment = 0.07;
 function draw() {  
   clearCanvas(ctx);
-  // ctx.fillStyle = 'white'
-  // ctx.fillRect(x+ Math.cos(delta)*30, y+ Math.sin(delta)*30, 10, 10);
-  // ctx.fillRect(x+ Math.cos(delta)*60, y+ Math.sin(delta)*60, 10, 10);
-  
+  ctx.drawImage(glowCanvas, 0, 0);
+  // console.log(window.scrollY)
+
   // drawImageCloud(ctx,200,400);
   delta += increment
-  renderStars(ctx,stars);
   renderGalaxies(ctx,delta, galaxyPositions);
-  renderTextContent(ctx);
+  renderTextContent(ctx,heightMultiplier);
   renderCursorTrail();
   if (delta > 10 * Math.PI) {
     increment = -increment;
